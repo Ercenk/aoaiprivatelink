@@ -16,8 +16,8 @@ Console.WriteLine($"aoaiKey: {aoaiKey.Value.Value}, aoaiEndpoint: {aoaiEndpoint.
 
 var builder = new KernelBuilder();
 
-builder.WithAzureChatCompletionService(
-         "gpt-35-turbo",                 
+builder.WithAzureTextCompletionService(
+         "text-davinci-003",                 
          $"https://{aoaiEndpoint.Value.Value}",
          aoaiKey.Value.Value);  
 
