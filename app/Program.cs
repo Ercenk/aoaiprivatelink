@@ -17,9 +17,9 @@ Console.WriteLine($"aoaiKey: {aoaiKey.Value.Value}, aoaiEndpoint: {aoaiEndpoint.
 var builder = new KernelBuilder();
 
 builder.WithAzureChatCompletionService(
-         "gpt-35-turbo",                  // Azure OpenAI Deployment Name
-         aoaiEndpoint.Value.Value, // Azure OpenAI Endpoint
-         aoaiKey.Value.Value);      // Azure OpenAI Key
+         "gpt-35-turbo",                 
+         $"https://{aoaiEndpoint.Value.Value}",
+         aoaiKey.Value.Value);  
 
 var kernel = builder.Build();
 
