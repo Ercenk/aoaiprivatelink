@@ -18,7 +18,7 @@ var builder = new KernelBuilder();
 
 builder.WithAzureTextCompletionService(
          "text-davinci-003",                 
-         $"https://{aoaiEndpoint.Value.Value}",
+         $"https://{aoaiEndpoint.Value.Value}/",
          aoaiKey.Value.Value);  
 
 var kernel = builder.Build();
@@ -30,5 +30,4 @@ var funSkillFunctions = kernel.ImportSemanticSkillFromDirectory(skillsDirectory,
 
 var result = await funSkillFunctions["Joke"].InvokeAsync("time travel to dinosaur age");
 
-// Return the result to the Notebook
 Console.WriteLine(result);
