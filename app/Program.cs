@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 
 var credential = new DefaultAzureCredential();
 
-var keyVaultEndpoint = "https://ercmscustakv.vault.azure.net";
+var keyVaultEndpoint = "https://cust-a-kv.vault.azure.net/";
 var client = new SecretClient(new Uri(keyVaultEndpoint), credential); 
 
 var aoaiKey = client.GetSecret("aoaiapikey");
