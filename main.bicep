@@ -6,21 +6,21 @@ param rgName string
 
 var rgLocation = resourceGroup().location
 
-module virtualNetwork 'networking.bicep' = {
-  name: 'virtualNetwork'
-  params: {
-    rgName: rgName
-    location: rgLocation
-  }
-}
+// module virtualNetwork 'networking.bicep' = {
+//   name: 'virtualNetwork'
+//   params: {
+//     rgName: rgName
+//     location: rgLocation
+//   }
+// }
 
-module openAi 'openAI.bicep' = {
-  name: 'openAi'
-  params: {
-    rgName: rgName
-    location: rgLocation
-  }
-}
+// module openAi 'openAI.bicep' = {
+//   name: 'openAi'
+//   params: {
+//     rgName: rgName
+//     location: rgLocation
+//   }
+// }
 
 
 
