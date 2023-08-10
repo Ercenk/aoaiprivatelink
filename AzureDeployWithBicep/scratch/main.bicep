@@ -1,9 +1,252 @@
+param vaults_cust_a_kv_name string = 'cust-a-kv'
+param virtualMachines_cust_a_vm_name string = 'cust-a-vm'
+param privateEndpoints_kvprivep_name string = 'kvprivep'
+param sshPublicKeys_cust_a_vm_key_name string = 'cust-a-vm_key'
+param virtualNetworks_cust_a_vnet_name string = 'cust_a_vnet'
+param networkInterfaces_cust_a_vm368_name string = 'cust-a-vm368'
+param bastionHosts_cust_a_vnet_bastion_name string = 'cust_a_vnet-bastion'
+param publicIPAddresses_cust_a_vnet_ip_name string = 'cust_a_vnet-ip'
+param accounts_erc_cust_a_aoai_name string = 'erc-cust-a-aoai'
+param networkSecurityGroups_cust_a_vm_nsg_name string = 'cust-a-vm-nsg'
+param privateEndpoints_cust_a_priv_endpoint_name string = 'cust-a-priv-endpoint'
+param schedules_shutdown_computevm_cust_a_vm_name string = 'shutdown-computevm-cust-a-vm'
+param networkInterfaces_cust_a_priv_endpoint_nic_name string = 'cust-a-priv-endpoint-nic'
+param privateDnsZones_privatelink_openai_azure_com_name string = 'privatelink.openai.azure.com'
+param privateDnsZones_privatelink_vaultcore_azure_net_name string = 'privatelink.vaultcore.azure.net'
+param networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name string = 'cust_a_vnet-app-nsg-eastus'
+param networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name string = 'cust_a_vnet-privateendpoints-nsg-eastus'
+param networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name string = 'cust_a_vnet-AzureBastionSubnet-nsg-eastus'
+param networkInterfaces_kvprivep_nic_d4507eb9_2620_4777_8aea_6943875f0c41_name string = 'kvprivep.nic.d4507eb9-2620-4777-8aea-6943875f0c41'
+
+resource accounts_erc_cust_a_aoai_name_resource 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+  name: accounts_erc_cust_a_aoai_name
+  location: 'eastus'
+  sku: {
+    name: 'S0'
+  }
+  kind: 'OpenAI'
+  properties: {
+    customSubDomainName: accounts_erc_cust_a_aoai_name
+    networkAcls: {
+      defaultAction: 'Allow'
+      virtualNetworkRules: []
+      ipRules: []
+    }
+    publicNetworkAccess: 'Disabled'
+  }
+}
 
 resource sshPublicKeys_cust_a_vm_key_name_resource 'Microsoft.Compute/sshPublicKeys@2023-03-01' = {
   name: sshPublicKeys_cust_a_vm_key_name
   location: 'eastus'
   properties: {
     publicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtc+OKyVnU8SsSV07ccb8AOaQ27DoZKFA6jkUh/1hI6h6YI7ygtYQkFO9Srs5y5bw0jUByMPyMAhlUljlzd5sZA0hNHG78WJPkb+oD92ghBM07jt5HMqsIgRHmueIAntioqerN5t0TxFixZalSz3ZMlFKaWHjuflrDfna2ZWDXigIY5JqJGdERFR4PNfjqeGrC1PyeByQ5CXP7+uw54PpH13kZ+zmWT++K0nCs1Ma1ZfeFA9I2Re+lyjAW4n6IKY5NMG1sLrEWoxqvJX7F1WWvC8RHWZS0l1qNQiQPgTgZ5yWwG/0dnGAjnzu6/zPuwuYn5LG4k7V98fv9hBh2WGlVqjzgsVqnQrExmQbvP9UwvurxQC3D+OJeK+TUDtnlZjtH/tH6aBRGXZY2kx4myCtfotNTVtscDiZGB+pyhhgHzQoBE75JaGjAKKzI3LGL9hID9FpIQsEPFG+1hS0ALWxMtEeVxWlUSIjCLRSStSDzgA9jqKSd+9YfDtAwo8Q5P2E= generated-by-azure'
+  }
+}
+
+resource vaults_cust_a_kv_name_resource 'Microsoft.KeyVault/vaults@2023-02-01' = {
+  name: vaults_cust_a_kv_name
+  location: 'eastus'
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: '16b3c013-d300-468d-ac64-7eda0820b6d3'
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Deny'
+      ipRules: []
+      virtualNetworkRules: []
+    }
+    accessPolicies: []
+    enabledForDeployment: false
+    enabledForDiskEncryption: false
+    enabledForTemplateDeployment: false
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 90
+    enableRbacAuthorization: true
+    vaultUri: 'https://${vaults_cust_a_kv_name}.vault.azure.net/'
+    provisioningState: 'Succeeded'
+    publicNetworkAccess: 'Disabled'
+  }
+}
+
+resource networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_resource 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name
+  location: 'eastus'
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowCorpnet'
+        id: networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_AllowCorpnet.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'CSS Governance Security Rule.  Allow Corpnet inbound.  https://aka.ms/casg'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'CorpNetPublic'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2700
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowSAW'
+        id: networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_AllowSAW.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'CSS Governance Security Rule.  Allow SAW inbound.  https://aka.ms/casg'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'CorpNetSaw'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2701
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+    ]
+  }
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name
+  location: 'eastus'
+  properties: {
+    securityRules: [
+      {
+        name: 'AllowGatewayManager'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowGatewayManager.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'Allow GatewayManager'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'GatewayManager'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2702
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowHttpsInBound'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowHttpsInBound.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'Allow HTTPs'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'Internet'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2703
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowSshRdpOutbound'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowSshRdpOutbound.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 100
+          direction: 'Outbound'
+          sourcePortRanges: []
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowAzureCloudOutbound'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowAzureCloudOutbound.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          protocol: 'TCP'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: 'AzureCloud'
+          access: 'Allow'
+          priority: 110
+          direction: 'Outbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowCorpnet'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowCorpnet.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'CSS Governance Security Rule.  Allow Corpnet inbound.  https://aka.ms/casg'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'CorpNetPublic'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2700
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+      {
+        name: 'AllowSAW'
+        id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowSAW.id
+        type: 'Microsoft.Network/networkSecurityGroups/securityRules'
+        properties: {
+          description: 'CSS Governance Security Rule.  Allow SAW inbound.  https://aka.ms/casg'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: 'CorpNetSaw'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          priority: 2701
+          direction: 'Inbound'
+          sourcePortRanges: []
+          destinationPortRanges: []
+          sourceAddressPrefixes: []
+          destinationAddressPrefixes: []
+        }
+      }
+    ]
   }
 }
 
@@ -108,6 +351,23 @@ resource publicIPAddresses_cust_a_vnet_ip_name_resource 'Microsoft.Network/publi
   }
 }
 
+resource accounts_erc_cust_a_aoai_name_text_davinci_003 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+  parent: accounts_erc_cust_a_aoai_name_resource
+  name: 'text-davinci-003'
+  sku: {
+    name: 'Standard'
+    capacity: 60
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: 'text-davinci-003'
+      version: '1'
+    }
+    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
+    raiPolicyName: 'Microsoft.Default'
+  }
+}
 
 resource accounts_erc_cust_a_aoai_name_cust_a_priv_endpoint_696c685d_9173_4450_aefa_bb28466e1c60 'Microsoft.CognitiveServices/accounts/privateEndpointConnections@2023-05-01' = {
   parent: accounts_erc_cust_a_aoai_name_resource
@@ -342,6 +602,226 @@ resource networkInterfaces_kvprivep_nic_d4507eb9_2620_4777_8aea_6943875f0c41_nam
   }
 }
 
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowAzureCloudOutbound 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowAzureCloudOutbound'
+  properties: {
+    protocol: 'TCP'
+    sourcePortRange: '*'
+    destinationPortRange: '443'
+    sourceAddressPrefix: '*'
+    destinationAddressPrefix: 'AzureCloud'
+    access: 'Allow'
+    priority: 110
+    direction: 'Outbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_AllowCorpnet 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name}/AllowCorpnet'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow Corpnet inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetPublic'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2700
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowCorpnet 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowCorpnet'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow Corpnet inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetPublic'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2700
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_AllowCorpnet 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name}/AllowCorpnet'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow Corpnet inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetPublic'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2700
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowGatewayManager 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowGatewayManager'
+  properties: {
+    description: 'Allow GatewayManager'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '443'
+    sourceAddressPrefix: 'GatewayManager'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2702
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowHttpsInBound 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowHttpsInBound'
+  properties: {
+    description: 'Allow HTTPs'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '443'
+    sourceAddressPrefix: 'Internet'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2703
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_AllowSAW 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name}/AllowSAW'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow SAW inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetSaw'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2701
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowSAW 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowSAW'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow SAW inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetSaw'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2701
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_AllowSAW 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name}/AllowSAW'
+  properties: {
+    description: 'CSS Governance Security Rule.  Allow SAW inbound.  https://aka.ms/casg'
+    protocol: '*'
+    sourcePortRange: '*'
+    destinationPortRange: '*'
+    sourceAddressPrefix: 'CorpNetSaw'
+    destinationAddressPrefix: '*'
+    access: 'Allow'
+    priority: 2701
+    direction: 'Inbound'
+    sourcePortRanges: []
+    destinationPortRanges: []
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_resource
+  ]
+}
+
+resource networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_AllowSshRdpOutbound 'Microsoft.Network/networkSecurityGroups/securityRules@2022-11-01' = {
+  name: '${networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name}/AllowSshRdpOutbound'
+  properties: {
+    protocol: '*'
+    sourcePortRange: '*'
+    sourceAddressPrefix: '*'
+    destinationAddressPrefix: 'VirtualNetwork'
+    access: 'Allow'
+    priority: 100
+    direction: 'Outbound'
+    sourcePortRanges: []
+    destinationPortRanges: [
+      '22'
+      '3389'
+    ]
+    sourceAddressPrefixes: []
+    destinationAddressPrefixes: []
+  }
+  dependsOn: [
+    networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource
+  ]
+}
+
 resource privateDnsZones_privatelink_vaultcore_azure_net_name_cust_a_kv 'Microsoft.Network/privateDnsZones/A@2018-09-01' = {
   parent: privateDnsZones_privatelink_vaultcore_azure_net_name_resource
   name: 'cust-a-kv'
@@ -444,6 +924,73 @@ resource Microsoft_Network_privateDnsZones_SOA_privateDnsZones_privatelink_vault
   }
 }
 
+resource bastionHosts_cust_a_vnet_bastion_name_resource 'Microsoft.Network/bastionHosts@2022-11-01' = {
+  name: bastionHosts_cust_a_vnet_bastion_name
+  location: 'eastus'
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    dnsName: 'bst-e5fef670-e651-4296-b59b-8da378adcce1.bastion.azure.com'
+    scaleUnits: 2
+    enableTunneling: false
+    enableIpConnect: false
+    disableCopyPaste: false
+    enableShareableLink: false
+    enableKerberos: false
+    ipConfigurations: [
+      {
+        name: 'IpConf'
+        id: '${bastionHosts_cust_a_vnet_bastion_name_resource.id}/bastionHostIpConfigurations/IpConf'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress: {
+            id: publicIPAddresses_cust_a_vnet_ip_name_resource.id
+          }
+          subnet: {
+            id: virtualNetworks_cust_a_vnet_name_AzureBastionSubnet.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource networkInterfaces_cust_a_vm368_name_resource 'Microsoft.Network/networkInterfaces@2022-11-01' = {
+  name: networkInterfaces_cust_a_vm368_name
+  location: 'eastus'
+  kind: 'Regular'
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        id: '${networkInterfaces_cust_a_vm368_name_resource.id}/ipConfigurations/ipconfig1'
+        etag: 'W/"ab1d8d73-320b-468b-9fd9-02a62fa9dda4"'
+        type: 'Microsoft.Network/networkInterfaces/ipConfigurations'
+        properties: {
+          provisioningState: 'Succeeded'
+          privateIPAddress: '10.0.0.4'
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: virtualNetworks_cust_a_vnet_name_app.id
+          }
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+        }
+      }
+    ]
+    dnsSettings: {
+      dnsServers: []
+    }
+    enableAcceleratedNetworking: true
+    enableIPForwarding: false
+    disableTcpStateTracking: false
+    networkSecurityGroup: {
+      id: networkSecurityGroups_cust_a_vm_nsg_name_resource.id
+    }
+    nicType: 'Standard'
+  }
+}
 
 resource privateDnsZones_privatelink_openai_azure_com_name_on7u2r53hps3w 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2018-09-01' = {
   parent: privateDnsZones_privatelink_openai_azure_com_name_resource
@@ -552,4 +1099,122 @@ resource privateEndpoints_cust_a_priv_endpoint_name_default 'Microsoft.Network/p
     privateEndpoints_cust_a_priv_endpoint_name_resource
 
   ]
+}
+
+resource virtualNetworks_cust_a_vnet_name_app 'Microsoft.Network/virtualNetworks/subnets@2022-11-01' = {
+  name: '${virtualNetworks_cust_a_vnet_name}/app'
+  properties: {
+    addressPrefix: '10.0.0.0/24'
+    networkSecurityGroup: {
+      id: networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_resource.id
+    }
+    serviceEndpoints: []
+    delegations: []
+    privateEndpointNetworkPolicies: 'Disabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+  dependsOn: [
+    virtualNetworks_cust_a_vnet_name_resource
+
+  ]
+}
+
+resource virtualNetworks_cust_a_vnet_name_AzureBastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2022-11-01' = {
+  name: '${virtualNetworks_cust_a_vnet_name}/AzureBastionSubnet'
+  properties: {
+    addressPrefix: '10.0.2.0/26'
+    networkSecurityGroup: {
+      id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource.id
+    }
+    serviceEndpoints: []
+    delegations: []
+    privateEndpointNetworkPolicies: 'Disabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+  dependsOn: [
+    virtualNetworks_cust_a_vnet_name_resource
+
+  ]
+}
+
+resource virtualNetworks_cust_a_vnet_name_privateendpoints 'Microsoft.Network/virtualNetworks/subnets@2022-11-01' = {
+  name: '${virtualNetworks_cust_a_vnet_name}/privateendpoints'
+  properties: {
+    addressPrefix: '10.0.1.0/24'
+    networkSecurityGroup: {
+      id: networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_resource.id
+    }
+    serviceEndpoints: []
+    delegations: []
+    privateEndpointNetworkPolicies: 'Disabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+  dependsOn: [
+    virtualNetworks_cust_a_vnet_name_resource
+
+  ]
+}
+
+resource virtualNetworks_cust_a_vnet_name_resource 'Microsoft.Network/virtualNetworks@2022-11-01' = {
+  name: virtualNetworks_cust_a_vnet_name
+  location: 'eastus'
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.0.0.0/16'
+      ]
+    }
+    dhcpOptions: {
+      dnsServers: []
+    }
+    subnets: [
+      {
+        name: 'app'
+        id: virtualNetworks_cust_a_vnet_name_app.id
+        properties: {
+          addressPrefix: '10.0.0.0/24'
+          networkSecurityGroup: {
+            id: networkSecurityGroups_cust_a_vnet_app_nsg_eastus_name_resource.id
+          }
+          serviceEndpoints: []
+          delegations: []
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+        type: 'Microsoft.Network/virtualNetworks/subnets'
+      }
+      {
+        name: 'AzureBastionSubnet'
+        id: virtualNetworks_cust_a_vnet_name_AzureBastionSubnet.id
+        properties: {
+          addressPrefix: '10.0.2.0/26'
+          networkSecurityGroup: {
+            id: networkSecurityGroups_cust_a_vnet_AzureBastionSubnet_nsg_eastus_name_resource.id
+          }
+          serviceEndpoints: []
+          delegations: []
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+        type: 'Microsoft.Network/virtualNetworks/subnets'
+      }
+      {
+        name: 'privateendpoints'
+        id: virtualNetworks_cust_a_vnet_name_privateendpoints.id
+        properties: {
+          addressPrefix: '10.0.1.0/24'
+          networkSecurityGroup: {
+            id: networkSecurityGroups_cust_a_vnet_privateendpoints_nsg_eastus_name_resource.id
+          }
+          serviceEndpoints: []
+          delegations: []
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
+        }
+        type: 'Microsoft.Network/virtualNetworks/subnets'
+      }
+    ]
+    virtualNetworkPeerings: []
+    enableDdosProtection: false
+  }
 }

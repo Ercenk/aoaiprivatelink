@@ -21,22 +21,34 @@ module networkingResources './networking.bicep' = {
   }
 }
 
-var keyVaultName = '${customerName}-kv'
-module keyVault './keyVault.bicep' = {
-  name: 'keyVault'
-  scope: rgCustomer
-  params: {
-    customerName: customerName
-  }
-}
-
-var openAIName = '${customerName}-openai'
 module openAI './openAI.bicep' = {
   name: 'openAI'
   scope: rgCustomer
   params: {
     customerName: customerName
+    virtualNetworkId: networkingResources.outputs.virtualNetworkId
+    subnetId: networkingResources.outputs.privateEndpointsSubnetId
   }
+  dependsOn: [
+    networkingResources
+  ]
+}
+
+module keyVault './keyVault.bicep' = {
+  name: 'keyVault'
+  scope: rgCustomer
+  params: {
+    customerName: customerName
+    virtualNetworkId: networkingResources.outputs.virtualNetworkId
+    subnetId: networkingResources.outputs.privateEndpointsSubnetId
+    azureOpenAIResId: openAI.outputs.azureOpenAiResourceId
+    azureOpenAIApiVersion: openAI.outputs.azureOpenAIVersion
+    azureOpenAIEndpoint: openAI.outputs.azureOpenAIEndpoint
+  }
+  dependsOn: [
+    networkingResources
+    openAI
+  ]
 }
 
 module virtualMachine './virtualMachine.bicep' = {
@@ -45,5 +57,9 @@ module virtualMachine './virtualMachine.bicep' = {
   params: {
     customerName: customerName
     subnetId: networkingResources.outputs.appSubnetId
+    keyVaultUri: keyVault.outputs.keyVaultUri
   }
+  dependsOn: [
+    networkingResources
+  ]
 }

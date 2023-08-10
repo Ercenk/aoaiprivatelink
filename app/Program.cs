@@ -2,10 +2,13 @@
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.SemanticKernel;
+using System;
 
 var credential = new DefaultAzureCredential();
 
-var keyVaultEndpoint = "https://cust-a-kv.vault.azure.net/";
+var uriVariable = "KEYVAULTURI";
+var keyVaultEndpoint = Environment.GetEnvironmentVariable(uriVariable);
+
 var client = new SecretClient(new Uri(keyVaultEndpoint), credential); 
 
 var aoaiKey = client.GetSecret("aoaiapikey");

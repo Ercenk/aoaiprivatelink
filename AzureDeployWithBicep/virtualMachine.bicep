@@ -7,13 +7,18 @@ param customerName string
 @description('Subnet ID for the NIC')
 param subnetId string
 
+@description('Uri for Key Vault')
+param keyVaultUri string
+
 var virtualMachineName = '${customerName}-vm'
 
 var location = resourceGroup().location
 
 var vmSize = 'Standard_D2s_v3'
 var osDiskName = '${virtualMachineName}_${uniqueString(resourceGroup().id)}'
+var username = 'azureuser'
 
+var keyVaultEnvironmentVar = base64('#cloud-config\nwrite_files:\n- path: /etc/profile.d/my_var.sh\n  content: |-\n    export KEYVAULTURI=${keyVaultUri}\n  permissions: \'0644\'')
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
   name: virtualMachineName
   location: location
@@ -38,7 +43,6 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
         caching: 'ReadWrite'
         managedDisk: {
           storageAccountType: 'Standard_LRS'
-          id: resourceId('Microsoft.Compute/disks', '${osDiskName}')
         }
         deleteOption: 'Delete'
         diskSizeGB: 30
@@ -48,23 +52,28 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
   }
     osProfile: {
       computerName: virtualMachineName
-      adminUsername: 'azureuser'
+      adminUsername: username
+      customData: keyVaultEnvironmentVar
       linuxConfiguration: {
         disablePasswordAuthentication: true
-        provisionVMAgent: true
-        patchSetting: {
-          patchMode: 'AutomaticByOS'
+        ssh: {
+          publicKeys: [
+            {
+              path: '/home/${username}/.ssh/authorized_keys'
+              keyData: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCaVRd3R/qH4IJDqUGvdZUOxqnisDtVkEWH+TlS7UTE3d2+HvigBGaE3G8WepmyIniVF5IFTCpbTGW7xkaMoGjE9jpbGWs98buWxfFBtENzOYjzL6bHvfpqoqXLUUPa7IIUvFW6WCDOY5puRYCwwysorxBngdD9GK3Dj8qKzyZwuOYpDwbDbvppX8LwO98VDBhsicVLGE1OdoTat+0JTYOSKUC2LZjqScPYW8pgqmt3SHAv8BAX9Ctk1S6mVCh2jdaNpoa4nT1v4YenpvyTk8xIoAq064m47IVDlmD0Db12U2UETPWXLozTFEDYO2KLwtER9rULRs/e+7Oio+a3FZZT18YQBv/VxGPzGbl1LSBCzERXObcL8lQ3KKCIIG8A8l+awiPqPEmwzjo3d8Wb5e6ThwWVwSbu5lfTGijcOga1spJIhMzBT5ik7BAF/tqaPntM7qcwyc/Q6AqFU02G6RoOD4gHauYzCeILwS76F9r4Lsfqtiuytv5/BISdDGLp7WU= generated-locally-locally'
+            }
+          ]
         }
-        enableAutomaticUpdates: true
+        provisionVMAgent: true
+        enableVMAgentPlatformUpdates: true
       }
       secrets: []
       allowExtensionOperations: true
-      requireGuestProvisionSignal: true
     }
     networkProfile: {
       networkInterfaces: [
         {
-          id: resourceId('Microsoft.Network/networkInterfaces', '${virtualMachineName}-nic')
+          id: networkInterface.id
         }
       ]
     }
@@ -94,9 +103,6 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
     }
     enableAcceleratedNetworking: false
     enableIPForwarding: false
-    networkSecurityGroup: {
-      id: resourceId('Microsoft.Network/networkSecurityGroups', '${virtualMachineName}-nsg')
-    }
     nicType: 'Standard'
   }
 }
