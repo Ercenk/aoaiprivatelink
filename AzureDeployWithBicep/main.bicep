@@ -10,6 +10,12 @@ param location string
 @description ('Public key for SSH access to the VM')
 param sshPublicKey string = ''
 
+@description('APIM Vnet resource group name')
+param apimRgName string = 'apim-rg'
+
+@description('APIM Vnet name')
+param apimVnetName string = 'apim-vnet'
+
 var resourceGroupName = '${customerName}-rg'
 resource rgCustomer 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: resourceGroupName
@@ -21,6 +27,7 @@ module networkingResourcesModule './networking.bicep' = {
   scope: rgCustomer
   params: {
     customerName: customerName
+    location: location
   }
 }
 
@@ -54,7 +61,7 @@ module keyVaultModule './keyVault.bicep' = {
   ]
 }
 
-module virtualMachine './virtualMachine.bicep' = {
+module virtualMachineModule './virtualMachine.bicep' = {
   name: 'virtualMachine'
   scope: rgCustomer
   params: {
@@ -63,6 +70,20 @@ module virtualMachine './virtualMachine.bicep' = {
     sshPublicKey: sshPublicKey
     keyVaultUri: keyVaultModule.outputs.keyVaultUri
     keyVaultName: keyVaultModule.outputs.keyVaultName
+  }
+  dependsOn: [
+    networkingResourcesModule
+  ]
+}
+
+module virtualNetworkPeeringsModule './peerVnets.bicep' = {
+  name: 'virtualNetworkPeerings'
+  scope: rgCustomer
+  params: {
+    customerVnetRgName: resourceGroupName
+    customerVnetName: networkingResourcesModule.outputs.virtualNetworkName
+    apimVnetRgName: apimRgName
+    apimVnetName: apimVnetName
   }
   dependsOn: [
     networkingResourcesModule

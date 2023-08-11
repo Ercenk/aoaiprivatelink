@@ -32,23 +32,23 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
 }
 
 // NOTE: this may fail if there is not enough capacity in the region. Also, hardcoding the model name, but it is not ideal.
-resource deployment_text_davinci_003 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
-  parent: azureOpenAI
-  name: 'text-davinci-003'
-  sku: {
-    name: 'Standard'
-    capacity: 60
-  }
-  properties: {
-    model: {
-      format: 'OpenAI'
-      name: 'text-davinci-003'
-      version: '1'
-    }
-    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
-    raiPolicyName: 'Microsoft.Default'
-  }
-}
+// resource deployment_text_davinci_003 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+//   parent: azureOpenAI
+//   name: 'text-davinci-003'
+//   sku: {
+//     name: 'Standard'
+//     capacity: 60
+//   }
+//   properties: {
+//     model: {
+//       format: 'OpenAI'
+//       name: 'text-davinci-003'
+//       version: '1'
+//     }
+//     versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
+//     raiPolicyName: 'Microsoft.Default'
+//   }
+// }
 
 
 var privateEndpointName = '${customerName}-openai-privateendpoint'

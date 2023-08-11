@@ -24,6 +24,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   }
 }
 
+// Create subnets explicitly to refer to specific ones easier.
 resource appSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-04-01' = {
   name: 'app'
   parent: virtualNetwork
@@ -46,21 +47,12 @@ resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-
     privateEndpointNetworkPolicies: 'Disabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
   }
-}
-
-module apiManagementWithVnet './apiManagementWithVnet.bicep' = {
-  name: 'apiManagementWithVnet'
-  params: {
-    customerVnetName: virtualNetwork.name
-    customerVnetApiVersion: virtualNetwork.apiVersion
-    location: location
-  }
   dependsOn: [
-    virtualNetwork
+    appSubnet
   ]
 }
-
 
 output virtualNetworkId string = virtualNetwork.id
 output appSubnetId string = appSubnet.id
 output privateEndpointsSubnetId string = privateEndpointsSubnet.id
+output virtualNetworkName string = virtualNetwork.name

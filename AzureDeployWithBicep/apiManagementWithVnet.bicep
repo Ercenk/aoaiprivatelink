@@ -1,25 +1,11 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'resourceGroup'
 
-@description('Customer Virtual Network')
-param customerVnetName string
-
 @description('API management Virtual Network')
 param apiManagementVnetName string = 'apim-vnet'
+
 @description('Location of the resources')
 param location string = resourceGroup().location
-
-resource customerVnet 'Microsoft.Network/virtualNetworks@2023-04-01'  existing = {
-  name: customerVnetName
-}
-
-// get the reference for the api management virtual network. If it were in a different subscription
-//
-// Example:
-// assume subscription ID and Vnet names are paramaters
-// resource apiManagementVnet =  'Microsoft.Network/virtualNetworks@2023-04-01'  existing = {
-//   name: apiManagementVnetName
-//   subscriptionId: subscription(customerSubscriptionId)
 
 // Create the API management Vnet
 
@@ -33,33 +19,35 @@ resource apiManagementVnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
         '10.1.0.0/16'
       ]
     }
+    subnets:[
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '10.1.1.0/24'
+        }
+      }
+    ]
   }
 }
 
-
-
-// Create peering from apiManagement to customer
-var apiManagementToCustomerPeeringName = '${apiManagementVnet.name}/peer-to-${customerVnet.name}'
-resource customerPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-04-01' = {
-  name: apiManagementToCustomerPeeringName
+resource apiManagement 'Microsoft.ApiManagement/service@2022-08-01' = {
+  name: 'myApiManagement'
+  location: location
+  sku: {
+    name: 'Developer'
+    capacity: 1
+  }
   properties: {
-    remoteVirtualNetwork: {
-      id: customerVnet.id
+    publisherEmail: 'admin@contoso.com'
+    publisherName: 'Contoso'
+    virtualNetworkConfiguration: {
+      // Notice the default subnet is hardcoded with the subnet in the Vnet
+      subnetResourceId: resourceId('Microsoft.Network/virtualNetworks/subnets', apiManagementVnetName, 'default')
+      vnetResourceId: apiManagementVnet.id
     }
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
+    virtualNetworkType: 'External'
   }
 }
 
-// Create peering from customer to apiManagement
-var customerToApiManagementPeeringName = '${customerVnet.name}/peer-to-${apiManagementVnet.name}'
-resource vnet2Peering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-04-01' = {
-  name: customerToApiManagementPeeringName
-  properties: {
-    remoteVirtualNetwork: {
-      id: apiManagementVnet.id
-    }
-    allowVirtualNetworkAccess: true
-    allowForwardedTraffic: true
-  }
-}
+
+output apiManagementVnetName string = apiManagementVnet.name
