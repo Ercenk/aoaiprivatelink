@@ -6,8 +6,8 @@ param customerName string
 
 var virtualNetworkName = '${customerName}-vnet'
 
-var location = resourceGroup().location
-var resourceGroupName = resourceGroup().name
+@description('Location of the resources')
+param location string = resourceGroup().location
 
 var appSubnetPrefix = '10.0.0.0/24'
 var privateEndpointsSubnetPrefix = '10.0.1.0/24'
@@ -34,9 +34,6 @@ resource appSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-04-01' = {
     privateEndpointNetworkPolicies: 'Disabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
   }
-  dependsOn: [
-    virtualNetwork
-  ]
 }
 
 resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-04-01' = {
@@ -49,10 +46,20 @@ resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-
     privateEndpointNetworkPolicies: 'Disabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
   }
+}
+
+module apiManagementWithVnet './apiManagementWithVnet.bicep' = {
+  name: 'apiManagementWithVnet'
+  params: {
+    customerVnetName: virtualNetwork.name
+    customerVnetApiVersion: virtualNetwork.apiVersion
+    location: location
+  }
   dependsOn: [
     virtualNetwork
   ]
 }
+
 
 output virtualNetworkId string = virtualNetwork.id
 output appSubnetId string = appSubnet.id

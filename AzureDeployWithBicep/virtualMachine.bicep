@@ -7,8 +7,14 @@ param customerName string
 @description('Subnet ID for the NIC')
 param subnetId string
 
+@description('SSH public key for the VM')
+param sshPublicKey string
+
 @description('Uri for Key Vault')
 param keyVaultUri string
+
+@description('Name of the Key Vault')
+param keyVaultName string
 
 var virtualMachineName = '${customerName}-vm'
 
@@ -18,7 +24,7 @@ var vmSize = 'Standard_D2s_v3'
 var osDiskName = '${virtualMachineName}_${uniqueString(resourceGroup().id)}'
 var username = 'azureuser'
 
-var keyVaultEnvironmentVar = base64('#cloud-config\nwrite_files:\n- path: /etc/profile.d/my_var.sh\n  content: |-\n    export KEYVAULTURI=${keyVaultUri}\n  permissions: \'0644\'')
+var keyVaultEnvironmentVar = base64('#cloud-config\nwrite_files:\n- path: /etc/profile.d/my_var.sh\n  content: |-\n    export KEYVAULTURI=${keyVaultUri}\n  sudo snap install dotnet-sdk --classic\n    permissions: \'0644\'')
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
   name: virtualMachineName
   location: location
@@ -60,7 +66,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
           publicKeys: [
             {
               path: '/home/${username}/.ssh/authorized_keys'
-              keyData: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCaVRd3R/qH4IJDqUGvdZUOxqnisDtVkEWH+TlS7UTE3d2+HvigBGaE3G8WepmyIniVF5IFTCpbTGW7xkaMoGjE9jpbGWs98buWxfFBtENzOYjzL6bHvfpqoqXLUUPa7IIUvFW6WCDOY5puRYCwwysorxBngdD9GK3Dj8qKzyZwuOYpDwbDbvppX8LwO98VDBhsicVLGE1OdoTat+0JTYOSKUC2LZjqScPYW8pgqmt3SHAv8BAX9Ctk1S6mVCh2jdaNpoa4nT1v4YenpvyTk8xIoAq064m47IVDlmD0Db12U2UETPWXLozTFEDYO2KLwtER9rULRs/e+7Oio+a3FZZT18YQBv/VxGPzGbl1LSBCzERXObcL8lQ3KKCIIG8A8l+awiPqPEmwzjo3d8Wb5e6ThwWVwSbu5lfTGijcOga1spJIhMzBT5ik7BAF/tqaPntM7qcwyc/Q6AqFU02G6RoOD4gHauYzCeILwS76F9r4Lsfqtiuytv5/BISdDGLp7WU= generated-locally-locally'
+              keyData: sshPublicKey
             }
           ]
         }
@@ -106,3 +112,23 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
     nicType: 'Standard'
   }
 }
+
+resource customerKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+  name: keyVaultName
+}
+var roleAssignmentName = guid('${customerName}-vm-role-assignment')
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: roleAssignmentName
+  scope: customerKeyVault
+  dependsOn: [
+    virtualMachine
+  ]
+  properties: {
+    principalId: virtualMachine.identity.principalId
+    // This is the resource id for the built in role for "Key Vault Secrets User"
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}//providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6'
+  }
+}
+
+output virtualMachineName string = virtualMachine.name

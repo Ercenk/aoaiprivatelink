@@ -14,14 +14,12 @@ var client = new SecretClient(new Uri(keyVaultEndpoint), credential);
 var aoaiKey = client.GetSecret("aoaiapikey");
 var aoaiEndpoint = client.GetSecret("aoaiendpoint");
 
-Console.WriteLine($"aoaiKey: {aoaiKey.Value.Value}, aoaiEndpoint: {aoaiEndpoint.Value.Value}");
-
 
 var builder = new KernelBuilder();
 
 builder.WithAzureTextCompletionService(
          "text-davinci-003",                 
-         $"https://{aoaiEndpoint.Value.Value}/",
+         aoaiEndpoint.Value.Value,
          aoaiKey.Value.Value);  
 
 var kernel = builder.Build();

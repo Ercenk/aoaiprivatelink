@@ -46,6 +46,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
  }
 }
 
+var azureOpenAIKeys = listKeys(azureOpenAIResId, azureOpenAIApiVersion)
 resource aoaiapikey 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyVault
   name: 'aoaiapikey'
@@ -55,7 +56,7 @@ resource aoaiapikey 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
       enabled: true
     }
     contentType: 'text/plain'
-    value: listKeys(azureOpenAIResId, azureOpenAIApiVersion).keys[0].value
+    value: azureOpenAIKeys.key1
   }
 }
 
@@ -143,5 +144,6 @@ resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 
+output keyVaultName string = keyVaultName
 output keyVaultId string = keyVault.id
 output keyVaultUri string = keyVault.properties.vaultUri

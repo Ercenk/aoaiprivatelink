@@ -7,47 +7,50 @@ param customerName string
 @description('Location to create the resources in')
 param location string
 
+@description ('Public key for SSH access to the VM')
+param sshPublicKey string = ''
+
 var resourceGroupName = '${customerName}-rg'
 resource rgCustomer 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: resourceGroupName
   location: location
 }
 
-module networkingResources './networking.bicep' = {
-  name: 'networkingResources'
+module networkingResourcesModule './networking.bicep' = {
+  name: 'networkingResourcesModule'
   scope: rgCustomer
   params: {
     customerName: customerName
   }
 }
 
-module openAI './openAI.bicep' = {
-  name: 'openAI'
+module openAIModule './openAI.bicep' = {
+  name: 'openAIModule'
   scope: rgCustomer
   params: {
     customerName: customerName
-    virtualNetworkId: networkingResources.outputs.virtualNetworkId
-    subnetId: networkingResources.outputs.privateEndpointsSubnetId
+    virtualNetworkId: networkingResourcesModule.outputs.virtualNetworkId
+    subnetId: networkingResourcesModule.outputs.privateEndpointsSubnetId
   }
   dependsOn: [
-    networkingResources
+    networkingResourcesModule
   ]
 }
 
-module keyVault './keyVault.bicep' = {
+module keyVaultModule './keyVault.bicep' = {
   name: 'keyVault'
   scope: rgCustomer
   params: {
     customerName: customerName
-    virtualNetworkId: networkingResources.outputs.virtualNetworkId
-    subnetId: networkingResources.outputs.privateEndpointsSubnetId
-    azureOpenAIResId: openAI.outputs.azureOpenAiResourceId
-    azureOpenAIApiVersion: openAI.outputs.azureOpenAIVersion
-    azureOpenAIEndpoint: openAI.outputs.azureOpenAIEndpoint
+    virtualNetworkId: networkingResourcesModule.outputs.virtualNetworkId
+    subnetId: networkingResourcesModule.outputs.privateEndpointsSubnetId
+    azureOpenAIResId: openAIModule.outputs.azureOpenAiResourceId
+    azureOpenAIApiVersion: openAIModule.outputs.azureOpenAIVersion
+    azureOpenAIEndpoint: openAIModule.outputs.azureOpenAIEndpoint
   }
   dependsOn: [
-    networkingResources
-    openAI
+    networkingResourcesModule
+    openAIModule
   ]
 }
 
@@ -56,10 +59,13 @@ module virtualMachine './virtualMachine.bicep' = {
   scope: rgCustomer
   params: {
     customerName: customerName
-    subnetId: networkingResources.outputs.appSubnetId
-    keyVaultUri: keyVault.outputs.keyVaultUri
+    subnetId: networkingResourcesModule.outputs.appSubnetId
+    sshPublicKey: sshPublicKey
+    keyVaultUri: keyVaultModule.outputs.keyVaultUri
+    keyVaultName: keyVaultModule.outputs.keyVaultName
   }
   dependsOn: [
-    networkingResources
+    networkingResourcesModule
   ]
 }
+
