@@ -24,7 +24,7 @@ var vmSize = 'Standard_D2s_v3'
 var osDiskName = '${virtualMachineName}_${uniqueString(resourceGroup().id)}'
 var username = 'azureuser'
 
-var keyVaultEnvironmentVar = base64('#cloud-config\nwrite_files:\n- path: /etc/profile.d/my_var.sh\n  content: |-\n    export KEYVAULTURI=${keyVaultUri}\n  sudo snap install dotnet-sdk --classic\n    permissions: \'0644\'')
+var keyVaultEnvironmentVar = base64('#cloud-config\nwrite_files:\n- path: /etc/profile.d/my_var.sh\n  content: |-\n    export KEYVAULTURI=${keyVaultUri}\n    permissions: \'0644\'')
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2023-03-01' = {
   name: virtualMachineName
   location: location
