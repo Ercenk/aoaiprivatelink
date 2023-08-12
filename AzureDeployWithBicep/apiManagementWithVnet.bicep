@@ -30,9 +30,11 @@ resource apiManagementVnet 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   }
 }
 
+var apimName = uniqueString(resourceGroup().id, 'apim')
 resource apiManagement 'Microsoft.ApiManagement/service@2022-08-01' = {
-  name: 'myApiManagement'
+  name: apimName
   location: location
+
   sku: {
     name: 'Developer'
     capacity: 1
@@ -43,7 +45,6 @@ resource apiManagement 'Microsoft.ApiManagement/service@2022-08-01' = {
     virtualNetworkConfiguration: {
       // Notice the default subnet is hardcoded with the subnet in the Vnet
       subnetResourceId: resourceId('Microsoft.Network/virtualNetworks/subnets', apiManagementVnetName, 'default')
-      vnetResourceId: apiManagementVnet.id
     }
     virtualNetworkType: 'External'
   }

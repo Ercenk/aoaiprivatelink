@@ -9,8 +9,14 @@ var virtualNetworkName = '${customerName}-vnet'
 @description('Location of the resources')
 param location string = resourceGroup().location
 
-var appSubnetPrefix = '10.0.0.0/24'
-var privateEndpointsSubnetPrefix = '10.0.1.0/24'
+@description('Virtual network address space prefix')
+param virtualNetworkAddressSpacePrefix string 
+
+@description('Application subnet prefix')
+param appSubnetPrefix string
+
+@description('Private endpoints subnet prefix')
+param privateEndpointsSubnetPrefix string
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   name: virtualNetworkName
@@ -18,7 +24,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   properties: {
     addressSpace: {
       addressPrefixes: [
-        '10.0.0.0/16'
+        virtualNetworkAddressSpacePrefix
       ]
     }
   }

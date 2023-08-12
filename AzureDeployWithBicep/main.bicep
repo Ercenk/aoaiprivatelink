@@ -16,6 +16,15 @@ param apimRgName string = 'apim-rg'
 @description('APIM Vnet name')
 param apimVnetName string = 'apim-vnet'
 
+@description('Virtual network address space prefix')
+param virtualNetworkAddressSpacePrefix string 
+
+@description('Application subnet prefix')
+param appSubnetPrefix string
+
+@description('Private endpoints subnet prefix')
+param privateEndpointsSubnetPrefix string
+
 var resourceGroupName = '${customerName}-rg'
 resource rgCustomer 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: resourceGroupName
@@ -28,6 +37,9 @@ module networkingResourcesModule './networking.bicep' = {
   params: {
     customerName: customerName
     location: location
+    virtualNetworkAddressSpacePrefix: virtualNetworkAddressSpacePrefix
+    appSubnetPrefix: appSubnetPrefix
+    privateEndpointsSubnetPrefix: privateEndpointsSubnetPrefix
   }
 }
 
