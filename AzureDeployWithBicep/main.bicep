@@ -87,18 +87,3 @@ module virtualMachineModule './virtualMachine.bicep' = {
     networkingResourcesModule
   ]
 }
-
-module virtualNetworkPeeringsModule './peerVnets.bicep' = {
-  name: 'virtualNetworkPeerings'
-  scope: rgCustomer
-  params: {
-    customerVnetRgName: resourceGroupName
-    customerVnetName: networkingResourcesModule.outputs.virtualNetworkName
-    apimVnetRgName: apimRgName
-    apimVnetName: apimVnetName
-  }
-  dependsOn: [
-    networkingResourcesModule
-  ]
-}
-
