@@ -1,8 +1,8 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'subscription'
 
-@description('Name of the customer')
-param customerName string
+@description('Name of the tenant')
+param tenantName string
 
 @description('Location to create the resources in')
 param location string
@@ -25,17 +25,17 @@ param appSubnetPrefix string
 @description('Private endpoints subnet prefix')
 param privateEndpointsSubnetPrefix string
 
-var resourceGroupName = '${customerName}-rg'
-resource rgCustomer 'Microsoft.Resources/resourceGroups@2022-09-01' = {
+var resourceGroupName = '${tenantName}-rg'
+resource rgTenant 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: resourceGroupName
   location: location
 }
 
 module networkingResourcesModule './networking.bicep' = {
   name: 'networkingResourcesModule'
-  scope: rgCustomer
+  scope: rgTenant
   params: {
-    customerName: customerName
+    tenantName: tenantName
     location: location
     virtualNetworkAddressSpacePrefix: virtualNetworkAddressSpacePrefix
     appSubnetPrefix: appSubnetPrefix
@@ -45,9 +45,9 @@ module networkingResourcesModule './networking.bicep' = {
 
 module openAIModule './openAI.bicep' = {
   name: 'openAIModule'
-  scope: rgCustomer
+  scope: rgTenant
   params: {
-    customerName: customerName
+    tenantName: tenantName
     virtualNetworkId: networkingResourcesModule.outputs.virtualNetworkId
     subnetId: networkingResourcesModule.outputs.privateEndpointsSubnetId
   }
@@ -58,9 +58,9 @@ module openAIModule './openAI.bicep' = {
 
 module keyVaultModule './keyVault.bicep' = {
   name: 'keyVault'
-  scope: rgCustomer
+  scope: rgTenant
   params: {
-    customerName: customerName
+    tenantName: tenantName
     virtualNetworkId: networkingResourcesModule.outputs.virtualNetworkId
     subnetId: networkingResourcesModule.outputs.privateEndpointsSubnetId
     azureOpenAIResId: openAIModule.outputs.azureOpenAiResourceId
@@ -75,13 +75,27 @@ module keyVaultModule './keyVault.bicep' = {
 
 module virtualMachineModule './virtualMachine.bicep' = {
   name: 'virtualMachine'
-  scope: rgCustomer
+  scope: rgTenant
   params: {
-    customerName: customerName
+    tenantName: tenantName
     subnetId: networkingResourcesModule.outputs.appSubnetId
     sshPublicKey: sshPublicKey
     keyVaultUri: keyVaultModule.outputs.keyVaultUri
     keyVaultName: keyVaultModule.outputs.keyVaultName
+  }
+  dependsOn: [
+    networkingResourcesModule
+  ]
+}
+
+module vnetPeeringModule './vnetPeering.bicep' = {
+  name: 'vnetPeering'
+  scope: rgTenant
+  params: {
+    tenantVnetName: networkingResourcesModule.outputs.virtualNetworkName
+    tenantVnetId: networkingResourcesModule.outputs.virtualNetworkId
+    apimRgName: apimRgName
+    apimVnetName: apimVnetName
   }
   dependsOn: [
     networkingResourcesModule

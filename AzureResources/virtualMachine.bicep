@@ -1,8 +1,8 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'resourceGroup'
 
-@description('Customer name')
-param customerName string
+@description('Tenant name')
+param tenantName string
 
 @description('Subnet ID for the NIC')
 param subnetId string
@@ -16,7 +16,7 @@ param keyVaultUri string
 @description('Name of the Key Vault')
 param keyVaultName string
 
-var virtualMachineName = '${customerName}-vm'
+var virtualMachineName = '${tenantName}-vm'
 
 var location = resourceGroup().location
 
@@ -113,14 +113,14 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   }
 }
 
-resource customerKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
+resource tenantKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: keyVaultName
 }
-var roleAssignmentName = guid('${customerName}-vm-role-assignment')
+var roleAssignmentName = guid('${tenantName}-vm-role-assignment')
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: roleAssignmentName
-  scope: customerKeyVault
+  scope: tenantKeyVault
   dependsOn: [
     virtualMachine
   ]

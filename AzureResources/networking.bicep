@@ -1,10 +1,10 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'resourceGroup'
 
-@description('Customer name')
-param customerName string
+@description('Tenant name')
+param tenantName string
 
-var virtualNetworkName = '${customerName}-vnet'
+var virtualNetworkName = '${tenantName}-vnet'
 
 @description('Location of the resources')
 param location string = resourceGroup().location

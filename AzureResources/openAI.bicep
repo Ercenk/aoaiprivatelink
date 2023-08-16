@@ -1,8 +1,8 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'resourceGroup'
 
-@description('Customer name')
-param customerName string
+@description('Tenant name')
+param tenantName string
 
 @description('Virtual Network ID for the private endpoint')
 param virtualNetworkId string
@@ -10,7 +10,7 @@ param virtualNetworkId string
 @description('Subnet ID for the private endpoint NICs')
 param subnetId string
 
-var openAIName = '${customerName}-openai'
+var openAIName = '${tenantName}-openai'
 
 var location = resourceGroup().location
 
@@ -51,7 +51,7 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
 // }
 
 
-var privateEndpointName = '${customerName}-openai-privateendpoint'
+var privateEndpointName = '${tenantName}-openai-privateendpoint'
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-04-01' = {
   name: privateEndpointName
   location: location
@@ -112,7 +112,7 @@ resource openaiPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-var privateDnsZoneLinkName = '${customerName}-azureopenai-vnetlink'
+var privateDnsZoneLinkName = '${tenantName}-azureopenai-vnetlink'
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: openaiPrivateDnsZone
   name: privateDnsZoneLinkName

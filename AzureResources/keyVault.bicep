@@ -1,8 +1,8 @@
 metadata description = 'Demonstrate using multiple Azure subscriptions for different tenants in a multi-tenant solution'
 targetScope = 'resourceGroup'
 
-@description('Customer name')
-param customerName string
+@description('Tenant name')
+param tenantName string
 
 @description('Virtual Network ID for the private endpoint')
 param virtualNetworkId string
@@ -19,7 +19,7 @@ param azureOpenAIApiVersion string
 @description('Azure OpenAI endpoint')
 param azureOpenAIEndpoint string
 
-var keyVaultName = '${customerName}-kv'
+var keyVaultName = '${tenantName}-kv'
 
 var location = resourceGroup().location
 
@@ -130,7 +130,7 @@ resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
   }
 }
 
-var privateDnsZoneLinkName = '${customerName}-key-vault-vnetlink'
+var privateDnsZoneLinkName = '${tenantName}-key-vault-vnetlink'
 resource privateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: keyVaultPrivateDnsZone
   name: privateDnsZoneLinkName
