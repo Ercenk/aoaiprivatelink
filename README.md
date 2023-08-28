@@ -1,4 +1,4 @@
-# WORK IN PROGRESS - NOTE COMPLETE
+# WORK IN PROGRESS - NOT COMPLETE
 
 # Multi-tenant deployment for Azure OpenAI using separate subscriptions, or resource groups per tenant
 
