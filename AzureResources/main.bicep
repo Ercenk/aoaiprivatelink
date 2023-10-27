@@ -25,6 +25,9 @@ param appSubnetPrefix string
 @description('Private endpoints subnet prefix')
 param privateEndpointsSubnetPrefix string
 
+@description('Location to deploy the code to')
+param useVm bool = true
+
 var resourceGroupName = '${tenantName}-rg'
 resource rgTenant 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: resourceGroupName
@@ -73,13 +76,26 @@ module keyVaultModule './keyVault.bicep' = {
   ]
 }
 
-module virtualMachineModule './virtualMachine.bicep' = {
+module virtualMachineModule './virtualMachine.bicep' = if(useVm) {
   name: 'virtualMachine'
   scope: rgTenant
   params: {
     tenantName: tenantName
     subnetId: networkingResourcesModule.outputs.appSubnetId
     sshPublicKey: sshPublicKey
+    keyVaultUri: keyVaultModule.outputs.keyVaultUri
+    keyVaultName: keyVaultModule.outputs.keyVaultName
+  }
+  dependsOn: [
+    networkingResourcesModule
+  ]
+}
+
+module functionApp './functionApp.bicep' = if(!useVm) {
+  name: 'functionApp'
+  scope: rgTenant
+  params: {
+    tenantName: tenantName
     keyVaultUri: keyVaultModule.outputs.keyVaultUri
     keyVaultName: keyVaultModule.outputs.keyVaultName
   }
