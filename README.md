@@ -1,3 +1,5 @@
+# WORK IN PROGRESS - NOT COMPLETE
+
 # Multi-tenant deployment for Azure OpenAI using separate subscriptions, or resource groups per tenant
 
 A recent sample describing how to implement [logging and monitoring Azure OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/ai/log-monitor-azure-openai) also shows how a Azure Private Endpoints can limit access to an Azure OpenAI service. 
