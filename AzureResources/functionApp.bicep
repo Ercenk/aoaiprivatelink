@@ -12,7 +12,7 @@ param keyVaultUri string
 
 var functionAppName = '${tenantName}${substring(uniqueString(resourceGroup().id), 0, 5)}'
 
-var storageAccountName = '${functionAppName}-sa'
+var storageAccountName = '${functionAppName}sa'
 
 var storageAccountType = 'Standard_LRS'
 
