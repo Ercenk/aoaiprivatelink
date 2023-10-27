@@ -2,6 +2,9 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.SemanticKernel;
 
 namespace Contoso.AzureOpenAI
 {
@@ -15,9 +18,9 @@ namespace Contoso.AzureOpenAI
         }
 
         [Function("CallAzureOpenAI")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
         {
-            var credential = new DefaultAzureCredential();
+            var credential = new DefaultAzureCredential(true);
 
             var uriVariable = "KEYVAULTURI";
             var keyVaultEndpoint = Environment.GetEnvironmentVariable(uriVariable);
@@ -37,19 +40,19 @@ namespace Contoso.AzureOpenAI
 
             var kernel = builder.Build();
 
-            var skillsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
+            var pluginsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
 
             // Load the FunSkill from the Skills Directory
-            var funSkillFunctions = kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "FunSkill");
+            var funPlugin = kernel.ImportSemanticFunctionsFromDirectory(pluginsDirectory, "FunSkill");
 
-            var result = await funSkillFunctions["Joke"].InvokeAsync("time travel to dinosaur age");
+            var result = await kernel.RunAsync("time travel to dinosaur age", funPlugin["Joke"]);
 
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
 
-            response.WriteString(result);
+            response.WriteString(result.ToString());
 
             return response;
         }

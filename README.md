@@ -78,3 +78,10 @@ az deployment group create \
 
 ## Deploying an environment for a tenant
 
+## Code that calls Azure OpenAI endpoint
+
+We have two examples for you, a console app and an Azure Function App. 
+
+### Azure Function App
+
+You can run the function app locally. First, you need to set `KEYVAULTURI` value in the local.settings.json file. Then manually change the networking rules on the Key Vault and Azure OpenAI instance to allow calls from internet for testing purposes. You may receive "Caller is not authorized to perform action on resource." error when running the function app. That means you need to grant appropriate permissions to yourself. If you encounter that error, add yourself to the `Key Vault Secrets User` role on the Azure Portal.

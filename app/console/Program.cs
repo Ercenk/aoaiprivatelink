@@ -1,8 +1,6 @@
-﻿using Azure.Core;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.SemanticKernel;
-using System;
 
 var credential = new DefaultAzureCredential();
 
@@ -24,11 +22,11 @@ builder.WithAzureTextCompletionService(
 
 var kernel = builder.Build();
 
-var skillsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
+var pluginsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
 
 // Load the FunSkill from the Skills Directory
-var funSkillFunctions = kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "FunSkill");
+var funPlugin = kernel.ImportSemanticFunctionsFromDirectory(pluginsDirectory, "FunSkill");
 
-var result = await funSkillFunctions["Joke"].InvokeAsync("time travel to dinosaur age");
+var result = await kernel.RunAsync("time travel to dinosaur age", funPlugin["Joke"]);
 
-Console.WriteLine(result);
+Console.WriteLine(result.ToString());
