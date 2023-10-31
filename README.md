@@ -77,6 +77,15 @@ az deployment group create \
 ```
 
 ## Deploying an environment for a tenant
+After successful creation of a VNet with API Management Gateway in the frontend resource group, we are ready to deploy a sample tenant environment in resource group consisting of a vnet with one application subnet, one private endpoint subnet, a key vault, an Azure OpenAI resource, and a virtual machine.  The vnet created in this deployment is peered to vnet created in the frontend resource group hosting the APIM Gateway.  
+
+```sh
+az deployment sub create \
+   --name "maindeployment" \
+   --template-file main.bicep 
+   --parameters main.bicepparam  
+   --location eastus
+```
 
 ## Code that calls Azure OpenAI endpoint
 
