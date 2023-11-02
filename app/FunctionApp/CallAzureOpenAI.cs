@@ -10,7 +10,7 @@ namespace Contoso.AzureOpenAI
 {
     public class CallAzureOpenAI
     {
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
 
         public CallAzureOpenAI(ILoggerFactory loggerFactory)
         {
@@ -42,12 +42,11 @@ namespace Contoso.AzureOpenAI
 
             var pluginsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
 
-            // Load the FunSkill from the Skills Directory
             var funPlugin = kernel.ImportSemanticFunctionsFromDirectory(pluginsDirectory, "FunSkill");
 
             var result = await kernel.RunAsync("time travel to dinosaur age", funPlugin["Joke"]);
 
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
+            logger.LogInformation($"I heard a great joke from Azure OpenAI: {result.ToString()}");
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/plain; charset=utf-8");

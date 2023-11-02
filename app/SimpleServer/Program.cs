@@ -13,10 +13,6 @@ namespace SimpleServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -26,17 +22,17 @@ namespace SimpleServer
                 app.UseSwaggerUI();
             }
 
-            app.MapGet("/joke", async (HttpContext httpContext) =>
+            app.MapGet("/joke", async (HttpContext httpContext, IConfiguration configuration) =>
             {
                 var credential = new DefaultAzureCredential();
 
-                var uriVariable = "KEYVAULTURI";
-                var keyVaultEndpoint = Environment.GetEnvironmentVariable(uriVariable);
+                var keyVaultEndpoint = configuration["KEYVAULTURI"];
 
                 var client = new SecretClient(new Uri(keyVaultEndpoint), credential);
 
                 var aoaiKey = client.GetSecret("aoaiapikey");
                 var aoaiEndpoint = client.GetSecret("aoaiendpoint");
+                Console.WriteLine(aoaiKey.Value.Value);
 
                 var builder = new KernelBuilder();
 
@@ -49,15 +45,12 @@ namespace SimpleServer
 
                 var skillsDirectory = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "skills");
 
-                // Load the FunSkill from the Skills Directory
-                var funSkillFunctions = kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "FunSkill");
+                var funPlugin = kernel.ImportSemanticSkillFromDirectory(skillsDirectory, "FunSkill");
 
-                var result = await funSkillFunctions["Joke"].InvokeAsync("time travel to dinosaur age");
+                var result = await kernel.RunAsync("time travel to dinosaur age", funPlugin["Joke"]);
 
-                return result;
-            })
-            .WithName("MakeJoke")
-            .WithOpenApi();
+                return result.ToString();
+            });
 
             app.Run();
         }
