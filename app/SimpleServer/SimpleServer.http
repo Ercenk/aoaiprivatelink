@@ -1,0 +1,2 @@
+GET https://localhost:61523/api/joke?tellMeAJokeAbout=chicken%20crossing%20the%20road HTTP/1.1
+Host: localhost:61523

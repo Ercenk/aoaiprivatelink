@@ -1,0 +1,1 @@
+GET http://localhost:7071/api/TellMeAJoke?tellMeAJokeAbout=a%20chicken%20crosses%20the%20road HTTP/1.1

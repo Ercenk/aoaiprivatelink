@@ -1,0 +1,5 @@
+Let me know if the following text is funny or not. You should answer "YES", "NO" or "ICANNOTTELL".
+
+[INPUT]
+{{$input}}
+[END INPUT]
