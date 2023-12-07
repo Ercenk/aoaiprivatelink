@@ -1,6 +1,6 @@
-﻿
-using Azure.Identity;
+﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -10,15 +10,23 @@ namespace JokeService;
 
 public class JokeMachine : IJokeMachine
 {
-    private Kernel kernel;
-    private OpenAIPromptExecutionSettings executionSettings;
+    private Kernel? kernel;
+    private OpenAIPromptExecutionSettings? executionSettings;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JokeMachine"/> class.
+    /// </summary>
+    /// <param name="configuration">The configuration object used to retrieve settings.</param>
     public JokeMachine(IConfiguration configuration)
     {
-        var credential = new DefaultAzureCredential(true);
+        var credential = new DefaultAzureCredential();
 
-        var keyVaultUri = "KEYVAULTURI";
-        var keyVaultEndpoint = GetSetting(configuration, keyVaultUri);
+        var kernelBuilder = new KernelBuilder()
+            .WithLoggerFactory(LoggerFactory.Create(builder =>
+                builder
+                .AddConsole()
+                .SetMinimumLevel(LogLevel.Information))
+                );
 
         var deploymentVariableName = "OPENAI_DEPLOYMENT_NAME";
         var aoaiDeploymentName = GetSetting(configuration, deploymentVariableName);
@@ -26,34 +34,78 @@ public class JokeMachine : IJokeMachine
         var modelIdName = "OPENAI_MODEL_ID";
         var modelId = GetSetting(configuration, modelIdName);
 
-        var client = new SecretClient(new Uri(keyVaultEndpoint), credential);
+        var useAzureCredsName = "USEAZURECREDS";
+        var useAzureCreds = GetSetting(configuration, useAzureCredsName);
 
-        var aoaiKey = client.GetSecret("aoaiapikey").Value.Value;
-        var aoaiEndpoint = client.GetSecret("aoaiendpoint").Value.Value;
+        var keyVaultUri = "KEYVAULTURI";
+        var keyVaultEndpoint = GetSetting(configuration, keyVaultUri);
 
-        if (string.IsNullOrEmpty(aoaiKey))
-        {
-            throw new Exception($"Secret {aoaiKey} is not set.");
-        }
+        var secretsClient = new SecretClient(new Uri(keyVaultEndpoint), credential);
+        var aoaiEndpoint = secretsClient.GetSecret("aoaiendpoint").Value.Value;
 
         if (string.IsNullOrEmpty(aoaiEndpoint))
         {
             throw new Exception($"Secret {aoaiEndpoint} is not set.");
         }
 
-        var builder = new KernelBuilder()
+        if (useAzureCreds != "true")
+        {
+            var aoaiKey = secretsClient.GetSecret("aoaiapikey").Value.Value;
+
+            if (string.IsNullOrEmpty(aoaiKey))
+            {
+                throw new Exception($"Secret {aoaiKey} is not set.");
+            }
+
+            kernelBuilder.WithAzureOpenAITextGeneration(
+                     aoaiDeploymentName,
+                     modelId,
+                     aoaiEndpoint,
+                     aoaiKey);
+        }
+        else
+        {
+            kernelBuilder.WithAzureOpenAITextGeneration(
+                 aoaiDeploymentName,
+                 modelId,
+                 aoaiEndpoint,
+                 credential);
+        }
+
+        this.kernel = kernelBuilder.Build();
+
+        this.executionSettings = new OpenAIPromptExecutionSettings()
+        {
+            MaxTokens = 100,
+            Temperature = 0.7,
+            TopP = 1.0,
+            FrequencyPenalty = 0.0,
+            PresencePenalty = 0.0,
+        };
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JokeMachine"/> class.
+    /// </summary>
+    /// <param name="deploymentName">The name of the deployment.</param>
+    /// <param name="modelId">The ID of the model.</param>
+    /// <param name="aoaiEndpoint">The endpoint for Azure OpenAI Private Link.</param>
+    /// <param name="aoaiKey">The key for Azure OpenAI Private Link.</param>
+    public JokeMachine(string deploymentName, string modelId, string aoaiEndpoint, string aoaiKey)
+    {
+        var kernelBuilder = new KernelBuilder()
             .WithLoggerFactory(LoggerFactory.Create(builder =>
                 builder
                 .AddConsole()
                 .SetMinimumLevel(LogLevel.Information))
-                )
+            )
             .WithAzureOpenAITextGeneration(
-                 aoaiDeploymentName,
-                 modelId,
-                 aoaiEndpoint,
-                 aoaiKey);
+                deploymentName,
+                modelId,
+                aoaiEndpoint,
+                aoaiKey);
 
-        this.kernel = builder.Build();
+        this.kernel = kernelBuilder.Build();
 
         this.executionSettings = new OpenAIPromptExecutionSettings()
         {
@@ -77,31 +129,6 @@ public class JokeMachine : IJokeMachine
         return keyVaultEndpoint;
     }
 
-    public JokeMachine(string deploymentName, string modelId, string aoaiEndpoint, string aoaiKey)
-    {
-        var builder = new KernelBuilder()
-            .WithLoggerFactory(LoggerFactory.Create(builder =>
-                builder
-                .AddConsole()
-                .SetMinimumLevel(LogLevel.Information))
-                )
-            .WithAzureOpenAITextGeneration(
-                 deploymentName,
-                 modelId,
-                 aoaiEndpoint,
-                 aoaiKey);
-
-        this.kernel = builder.Build();
-
-        this.executionSettings = new OpenAIPromptExecutionSettings()
-        {
-            MaxTokens = 100,
-            Temperature = 0.7,
-            TopP = 1.0,
-            FrequencyPenalty = 0.0,
-            PresencePenalty = 0.0,
-        };
-    }
 
     public async Task<string> TellJokeAsync(string input)
     {
