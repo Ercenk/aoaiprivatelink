@@ -11,9 +11,16 @@ namespace SimpleServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
             builder.Services.AddSingleton<IJokeMachine, JokeMachine>();
 
             var app = builder.Build();
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.MapSwagger();
 
             app.MapGet("/api/joke", async ([FromQuery] string tellMeAJokeAbout, IJokeMachine jokeMachine, HttpContext httpContext, IConfiguration configuration) =>
             {
